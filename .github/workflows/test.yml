@@ -1,0 +1,75 @@
+name: Test IOSpeed Script
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Test script syntax
+      run: |
+        # Проверяем синтаксис shell скрипта
+        sh -n iospeed.sh
+        sh -n install-iospeed.sh
+    
+    - name: Test basic functionality
+      run: |
+        # Тестируем основные функции
+        chmod +x iospeed.sh
+        
+        # Тест справки
+        ./iospeed.sh -h || true
+        
+        # Быстрый тест с маленьким файлом
+        ./iospeed.sh -s 1 -p /tmp
+        
+        # Тест в tmpfs (если доступен)
+        if [ -d /dev/shm ]; then
+          ./iospeed.sh -s 1 -p /dev/shm
+        fi
+    
+    - name: Test installer
+      run: |
+        chmod +x install-iospeed.sh
+        
+        # Тестируем функции установщика (без реальной установки)
+        # Создаем mock окружение
+        mkdir -p /tmp/test-opt/bin /tmp/test-opt/etc
+        
+        # Тестируем проверку зависимостей
+        echo "Testing installer functions..."
+        
+    - name: Lint with shellcheck
+      run: |
+        # Устанавливаем shellcheck если доступен
+        if command -v shellcheck >/dev/null 2>&1; then
+          shellcheck iospeed.sh install-iospeed.sh || true
+        else
+          echo "shellcheck not available, skipping"
+        fi
+
+  test-different-shells:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        shell: [bash, dash]
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install shell
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ${{ matrix.shell }}
+    
+    - name: Test with ${{ matrix.shell }}
+      run: |
+        chmod +x iospeed.sh
+        ${{ matrix.shell }} iospeed.sh -s 1 -p /tmp

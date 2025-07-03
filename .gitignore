@@ -1,0 +1,29 @@
+# Временные файлы тестирования
+tempfile.io
+*.tmp
+
+# Архивы
+*.tar.gz
+*.zip
+
+# Логи
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Backup files
+*~
+*.bak
+*.backup
+
+# Test directories
+test/
+testing/
